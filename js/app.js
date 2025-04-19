@@ -8,17 +8,7 @@ var tab = "csv",
     global_form_cols = 0,
     delete_mode = false;
 
-var example_csv = 'Feature, Description, Example\n' +
-    'Renders markdown, Uses showdown library to render contents of table cells, **Just** *like* ``this``\n' +
-    'Escapes quotes, Easier to edit without so only uses them when necessary, "It does an \\\"okay\\\" job"\n' +
-    'Preview table matches GitHub style, As closely as possible, Look!\n' +
-    'Preserves alignment, Between all views, Switch to CSV and back\n' +
-    'Import HTML, Converts back and forth, Copy from *Inspect Element*\n' +
-    'Markdown formatting, "Adds spaces, makes things more legible",Markdown tab\n' +
-    'Form view, "Create tables with buttons!",Form tab\n' +
-    'Hasn\\\'t caught fire yet, So far, Huzzah!';
-
-$(window).load(function() {
+$(window).load(function () {
 
     // Initial div
     layout(true);
@@ -29,23 +19,20 @@ $(window).load(function() {
     if (tab != "csv") {
         $('#csv-options').hide();
     }
-    if (tab != "sql") {
-        $('#sql-info').hide();
-    }
     if (tab != "form") {
         $('.form-tools').hide();
     }
 
     // bind form buttons
-    $("body").delegate("#new-row", "click", function() {
+    $("body").delegate("#new-row", "click", function () {
         form_add_row();
     });
 
-    $("body").delegate("#new-column", "click", function() {
+    $("body").delegate("#new-column", "click", function () {
         form_add_col();
     });
 
-    $("body").delegate("#toggle-delete", "click", function() {
+    $("body").delegate("#toggle-delete", "click", function () {
 
         if (delete_mode) {
             delete_mode = false;
@@ -61,31 +48,31 @@ $(window).load(function() {
 
     });
 
-    $("body").delegate(".button-row-duplicate", "click", function() {
+    $("body").delegate(".button-row-duplicate", "click", function () {
         if (typeof $(this).closest("tr")[0].rowIndex === 'number') {
             form_duplicate_row($(this).closest("tr")[0].rowIndex);
         }
     });
 
-    $("body").delegate(".button-row-remove", "click", function() {
+    $("body").delegate(".button-row-remove", "click", function () {
         if (typeof $(this).closest("tr")[0].rowIndex === 'number') {
             form_remove_row($(this).closest("tr")[0].rowIndex);
         }
     });
 
-    $("body").delegate(".button-col-duplicate", "click", function() {
+    $("body").delegate(".button-col-duplicate", "click", function () {
         if (typeof $(this).closest("td")[0].cellIndex === 'number') {
             form_duplicate_col($(this).closest("td")[0].cellIndex);
         }
     });
 
-    $("body").delegate(".button-col-remove", "click", function() {
+    $("body").delegate(".button-col-remove", "click", function () {
         if (typeof $(this).closest("td")[0].cellIndex === 'number') {
             form_remove_col($(this).closest("td")[0].cellIndex);
         }
     });
 
-    $("#check-formatter").change(function() {
+    $("#check-formatter").change(function () {
         if ($("#check-formatter").is(':checked')) {
             prettify_md = true;
         } else {
@@ -101,7 +88,7 @@ $(window).load(function() {
 
     });
 
-    $(window).resize(function() {
+    $(window).resize(function () {
         if (tab === "form") {
             form_resize();
         }
@@ -110,12 +97,12 @@ $(window).load(function() {
     // Table-builder
 
     // Opening square
-    $("body").delegate("#tablebuilder-start", "mousedown", function() {
+    $("body").delegate("#tablebuilder-start", "mousedown", function () {
         tablebuilder_create();
     });
 
     // When other squares are entered
-    $("body").delegate(".table-builder>div>div", "mouseenter mouseup", function() {
+    $("body").delegate(".table-builder>div>div", "mouseenter mouseup", function () {
         if ($(this).attr('id') !== 'start') {
             if (event.buttons === 0) {
                 var x = parseInt($(this).attr('x')),
@@ -131,7 +118,7 @@ $(window).load(function() {
     });
 
     // Mouse up on a square
-    $("body").delegate(".table-builder", "mouseout", function() {
+    $("body").delegate(".table-builder", "mouseout", function () {
         tablebuilder_clear();
     });
 
@@ -229,13 +216,11 @@ function changeTab(newTab) {
         if ((tab === 'md') || tab === 'sql') {
             $('textarea').removeClass('md');
             if (tab === 'md') $('#md-options').hide();
-            if (tab === 'sql') $('#sql-info').hide();
         }
 
         if ((newTab === 'md') || newTab === 'sql') {
             $('textarea').addClass('md');
             if (newTab === 'md') $('#md-options').show();
-            if (newTab === 'sql') $('#sql-info').show();
         }
 
         if (tab === 'form') {
@@ -251,9 +236,6 @@ function changeTab(newTab) {
         }
         if (newTab === "csv") {
             $('#csv-options').show();
-        }
-        if (newTab === "sql") {
-            $('#sql-info').show();
         }
         if (newTab === "form") {
             $('.form-tools').show();
@@ -1210,12 +1192,6 @@ function array2form(array) {
 
     html += "</tbody></table>";
 
-    if (array.length === 0) {
-        html += "<div class=\"flash flash-with-icon\">" +
-            "<span class=\"octicon octicon-tools\"></span>" +
-            "You can use the tools above to create your table or enter some markdown or CSV on the other tabs.</div>"
-    }
-
     global_form_cols = form_cols;
 
     return html;
@@ -1521,39 +1497,6 @@ function tablebuilder_build(x, y) {
         global_form_cols = x;
         form_resize();
 
-    }
-
-}
-
-function fill_example() {
-
-    var r = confirm("This will clear whatever you're working on and replace it with some example data. Ok?");
-    if (r == true) {
-
-        // Simulate switching to preview.
-        layout(false);
-        $('textarea').removeClass('md');
-        $('#md-options').hide();
-
-        // Convert example csv to array
-        var array = csv2array(example_csv);
-        header_alignment = ['l', 'l', 'r'];
-
-        // And to html
-        var html = array2preview(array);
-
-        array_storge = array; // Store the array
-
-        $('.preview').html(html);
-
-        $('.tabnav-tab').removeClass('selected');
-        $('#tab-preview').addClass('selected');
-
-        // Update variables
-        tab = 'preview';
-
-    } else {
-        // not cool.
     }
 
 }
